@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<!-- saved from url=(0043)file:///c%3A/Users/crosb/.vscode/index.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-site-verification" content="ygXayPk_yPxZYH2kFB0ftT2UwlD6_ZRIC7z3XndFDdI" />
+  <title>Mix &amp; Match Neon Calculator &amp; Timer Side by Side</title>
+  <script src="./Mix &amp; Match_files/saved_resource"></script>
+  <style>
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
+      background: radial-gradient(circle, #0f172a, #1e293b);
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .stars {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 5;
+    }
+    .star {
+      position: absolute;
+      background: radial-gradient(circle, rgba(255, 215, 0, 0.8) 0%, rgba(255, 215, 0, 0) 70%);
+      border-radius: 50%;
+      opacity: 0.2;
+      animation: pulse 3s ease-in-out infinite;
+    }
+    .star:nth-child(odd) {
+      animation-duration: 2.5s;
+      animation-delay: 0s;
+    }
+    .star:nth-child(even) {
+      animation-duration: 3.5s;
+      animation-delay: 1.5s;
+    }
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 0.2;
+        transform: translateY(0);
+      }
+      50% {
+        opacity: 0.6;
+        transform: translateY(-4px);
+      }
+    }
+
+    /* Container holding both panels side by side and vertically centered */
+    .container {
+      max-width: 1280px;
+      width: 100%;
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      align-items: stretch; /* stretch children height */
+      box-sizing: border-box;
+      z-index: 10;
+      padding: 0 1rem;
+      height: 70vh; /* fixed height for equal panel heights */
+      min-height: 400px;
+      max-height: 800px;
+    }
+
+    /* Panel style */
+    .panel {
+      flex-shrink: 0;
+      width: 600px;
+      background: #111827;
+      border-radius: 1rem;
+      padding: 1rem 1.5rem;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      box-shadow: 0 0 15px #8b5cf6, 0 0 30px #06b6d4;
+      color: #a5b4fc;
+      height: 100%; /* fill container height */
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    /* Calculator form fills remaining height, scrolls if needed */
+    form {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem 1rem;
+      color: #a5b4fc;
+      flex-grow: 1;
+      overflow-y: auto;
+      min-height: 0; /* important for flexbox scrolling */
+    }
+    form > div {
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      font-weight: 600;
+      font-size: 0.875rem;
+      margin-bottom: 0.15rem;
+      display: flex;
+      justify-content: space-between;
+      color: #a5b4fc;
+    }
+    .max-value {
+      font-weight: 400;
+      opacity: 0.7;
+      font-size: 0.75rem;
+    }
+    input[type=number] {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid #334155;
+      color: #a5b4fc !important;
+      padding: 6px 8px;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      height: 32px;
+      box-sizing: border-box;
+      outline-offset: 2px;
+      outline-color: #7c3aed;
+      transition: outline-color 0.3s ease;
+    }
+    input[type=number]:focus {
+      outline-color: #a78bfa;
+    }
+    #result {
+      grid-column: 1 / -1;
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-top: 0.75rem;
+      color: #4ade80;
+      text-align: center;
+    }
+    #illegal {
+      grid-column: 1 / -1;
+      color: #f87171;
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-align: center;
+      min-height: 1.2rem;
+      margin-top: 0.25rem;
+    }
+
+    /* Timer styles */
+    .timer-display {
+      font-size: 3rem;
+      font-weight: 700;
+      text-align: center;
+      color: #a5b4fc;
+      user-select: none;
+      font-family: 'Segoe UI', sans-serif;
+      text-shadow: 0 0 10px #8b5cf6;
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 0; /* allow flex-grow */
+    }
+    .timer-controls {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-shrink: 0;
+    }
+    button.timer-btn {
+      background: #1e293b;
+      border: 1px solid #7c3aed;
+      color: #a5b4fc;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 0 10px #7c3aed;
+      transition: background-color 0.3s ease;
+    }
+    button.timer-btn:hover {
+      background: #7c3aed;
+      color: white;
+    }
+  </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.16 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width: 640px){.container{max-width:640px}}@media (min-width: 768px){.container{max-width:768px}}@media (min-width: 1024px){.container{max-width:1024px}}@media (min-width: 1280px){.container{max-width:1280px}}@media (min-width: 1536px){.container{max-width:1536px}}</style></head>
+<body>
+  <div class="stars" aria-hidden="true"><div class="star" style="width: 5.26875px; height: 5.26875px; top: 5.26888vh; left: 51.6055vw; animation-delay: 0.450085s;"></div><div class="star" style="width: 4.01416px; height: 4.01416px; top: 63.883vh; left: 72.0209vw; animation-delay: 2.02482s;"></div><div class="star" style="width: 4.98882px; height: 4.98882px; top: 61.8196vh; left: 90.7304vw; animation-delay: 1.84008s;"></div><div class="star" style="width: 5.43763px; height: 5.43763px; top: 96.2847vh; left: 28.3287vw; animation-delay: 2.32545s;"></div><div class="star" style="width: 5.02548px; height: 5.02548px; top: 8.3782vh; left: 91.9309vw; animation-delay: 1.49088s;"></div><div class="star" style="width: 5.1264px; height: 5.1264px; top: 75.6608vh; left: 98.218vw; animation-delay: 0.442411s;"></div><div class="star" style="width: 5.8028px; height: 5.8028px; top: 47.3578vh; left: 67.1911vw; animation-delay: 1.54182s;"></div><div class="star" style="width: 4.10234px; height: 4.10234px; top: 49.165vh; left: 11.3529vw; animation-delay: 0.497796s;"></div><div class="star" style="width: 6.52644px; height: 6.52644px; top: 3.3239vh; left: 92.9386vw; animation-delay: 0.405612s;"></div><div class="star" style="width: 5.61787px; height: 5.61787px; top: 12.7364vh; left: 9.307vw; animation-delay: 1.71199s;"></div><div class="star" style="width: 5.7285px; height: 5.7285px; top: 89.6322vh; left: 56.7667vw; animation-delay: 2.22786s;"></div><div class="star" style="width: 5.50103px; height: 5.50103px; top: 14.5353vh; left: 17.6302vw; animation-delay: 1.68417s;"></div><div class="star" style="width: 3.18268px; height: 3.18268px; top: 64.5064vh; left: 61.0682vw; animation-delay: 1.98133s;"></div><div class="star" style="width: 6.16925px; height: 6.16925px; top: 44.2394vh; left: 62.5304vw; animation-delay: 1.18175s;"></div><div class="star" style="width: 6.08725px; height: 6.08725px; top: 87.9638vh; left: 61.7572vw; animation-delay: 1.75185s;"></div><div class="star" style="width: 4.82093px; height: 4.82093px; top: 95.9984vh; left: 84.3723vw; animation-delay: 0.300924s;"></div><div class="star" style="width: 4.81055px; height: 4.81055px; top: 76.5736vh; left: 17.4133vw; animation-delay: 1.75106s;"></div><div class="star" style="width: 4.64048px; height: 4.64048px; top: 81.7023vh; left: 75.1543vw; animation-delay: 0.990464s;"></div><div class="star" style="width: 5.95569px; height: 5.95569px; top: 25.4119vh; left: 13.6682vw; animation-delay: 1.46815s;"></div><div class="star" style="width: 3.43624px; height: 3.43624px; top: 48.27vh; left: 57.4383vw; animation-delay: 2.19588s;"></div><div class="star" style="width: 6.8179px; height: 6.8179px; top: 97.8772vh; left: 12.4377vw; animation-delay: 2.67832s;"></div><div class="star" style="width: 3.15758px; height: 3.15758px; top: 85.8425vh; left: 16.3198vw; animation-delay: 2.2687s;"></div><div class="star" style="width: 5.85958px; height: 5.85958px; top: 45.4399vh; left: 56.1706vw; animation-delay: 2.49581s;"></div><div class="star" style="width: 4.72889px; height: 4.72889px; top: 85.305vh; left: 38.5708vw; animation-delay: 0.794469s;"></div><div class="star" style="width: 4.36382px; height: 4.36382px; top: 80.6555vh; left: 39.7121vw; animation-delay: 1.12492s;"></div><div class="star" style="width: 4.77084px; height: 4.77084px; top: 34.9893vh; left: 55.1988vw; animation-delay: 1.92138s;"></div><div class="star" style="width: 5.45812px; height: 5.45812px; top: 23.2724vh; left: 28.3863vw; animation-delay: 0.481441s;"></div><div class="star" style="width: 3.87126px; height: 3.87126px; top: 90.2045vh; left: 83.1505vw; animation-delay: 2.32947s;"></div><div class="star" style="width: 4.48863px; height: 4.48863px; top: 80.7299vh; left: 64.0255vw; animation-delay: 1.1179s;"></div><div class="star" style="width: 6.24002px; height: 6.24002px; top: 3.80729vh; left: 3.3367vw; animation-delay: 0.355296s;"></div><div class="star" style="width: 4.23025px; height: 4.23025px; top: 13.2361vh; left: 46.4623vw; animation-delay: 1.71144s;"></div><div class="star" style="width: 5.56679px; height: 5.56679px; top: 29.2207vh; left: 63.8268vw; animation-delay: 2.11856s;"></div><div class="star" style="width: 4.72313px; height: 4.72313px; top: 74.355vh; left: 24.7198vw; animation-delay: 2.52758s;"></div><div class="star" style="width: 6.46166px; height: 6.46166px; top: 33.1752vh; left: 21.4951vw; animation-delay: 2.57419s;"></div><div class="star" style="width: 4.23499px; height: 4.23499px; top: 67.6945vh; left: 34.3713vw; animation-delay: 1.47857s;"></div><div class="star" style="width: 3.67142px; height: 3.67142px; top: 78.1697vh; left: 93.5076vw; animation-delay: 2.66966s;"></div><div class="star" style="width: 5.34415px; height: 5.34415px; top: 55.7769vh; left: 80.9201vw; animation-delay: 2.33802s;"></div><div class="star" style="width: 3.18357px; height: 3.18357px; top: 85.9462vh; left: 77.5932vw; animation-delay: 2.56326s;"></div><div class="star" style="width: 4.75149px; height: 4.75149px; top: 66.5307vh; left: 17.2761vw; animation-delay: 2.94476s;"></div><div class="star" style="width: 3.03483px; height: 3.03483px; top: 91.9304vh; left: 14.2673vw; animation-delay: 1.80445s;"></div><div class="star" style="width: 5.02771px; height: 5.02771px; top: 12.6742vh; left: 42.0612vw; animation-delay: 0.132965s;"></div><div class="star" style="width: 4.35607px; height: 4.35607px; top: 15.474vh; left: 62.0479vw; animation-delay: 1.4466s;"></div><div class="star" style="width: 4.19969px; height: 4.19969px; top: 26.9707vh; left: 41.4555vw; animation-delay: 0.706795s;"></div><div class="star" style="width: 6.40888px; height: 6.40888px; top: 88.079vh; left: 85.9179vw; animation-delay: 1.74933s;"></div><div class="star" style="width: 6.7939px; height: 6.7939px; top: 51.7273vh; left: 49.4766vw; animation-delay: 1.2582s;"></div><div class="star" style="width: 6.13452px; height: 6.13452px; top: 28.6132vh; left: 13.0733vw; animation-delay: 1.51691s;"></div><div class="star" style="width: 5.04247px; height: 5.04247px; top: 36.7877vh; left: 26.612vw; animation-delay: 2.18803s;"></div><div class="star" style="width: 4.2892px; height: 4.2892px; top: 88.1502vh; left: 41.8184vw; animation-delay: 1.4948s;"></div><div class="star" style="width: 4.43577px; height: 4.43577px; top: 10.1391vh; left: 42.6305vw; animation-delay: 1.87486s;"></div><div class="star" style="width: 3.50766px; height: 3.50766px; top: 34.647vh; left: 22.1291vw; animation-delay: 0.761768s;"></div><div class="star" style="width: 5.89321px; height: 5.89321px; top: 89.1112vh; left: 26.7884vw; animation-delay: 0.782005s;"></div><div class="star" style="width: 5.87829px; height: 5.87829px; top: 56.1636vh; left: 89.9672vw; animation-delay: 2.8989s;"></div><div class="star" style="width: 5.44019px; height: 5.44019px; top: 58.454vh; left: 74.7735vw; animation-delay: 1.6738s;"></div><div class="star" style="width: 6.24719px; height: 6.24719px; top: 57.2977vh; left: 82.9605vw; animation-delay: 0.864328s;"></div><div class="star" style="width: 3.13595px; height: 3.13595px; top: 45.8924vh; left: 24.7406vw; animation-delay: 0.851663s;"></div><div class="star" style="width: 5.17278px; height: 5.17278px; top: 41.9497vh; left: 5.25336vw; animation-delay: 2.0063s;"></div><div class="star" style="width: 4.57299px; height: 4.57299px; top: 59.0821vh; left: 36.6927vw; animation-delay: 1.78378s;"></div><div class="star" style="width: 4.29318px; height: 4.29318px; top: 33.2498vh; left: 15.6871vw; animation-delay: 2.44702s;"></div><div class="star" style="width: 5.67168px; height: 5.67168px; top: 94.4421vh; left: 99.9241vw; animation-delay: 1.65393s;"></div><div class="star" style="width: 5.09109px; height: 5.09109px; top: 75.3904vh; left: 40.82vw; animation-delay: 2.67858s;"></div></div>
+
+  <div class="container" id="container">
+    <!-- Calculator Panel -->
+    <div class="panel" id="calculator-panel">
+      <h1>Mix &amp; Match Score Calculator</h1>
+      <form id="calc-form" autocomplete="off" novalidate="">
+        <div><label for="pins">Pins <span class="max-value">Max: 34</span></label><input type="number" id="pins" min="0" max="34" value="0"></div>
+        <div><label for="beams">Beams <span class="max-value">Max: 2</span></label><input type="number" id="beams" min="0" max="2" value="0"></div>
+        <div><label for="stacks2">2-Color Stacks <span class="max-value">Max: 17</span></label><input type="number" id="stacks2" min="0" max="17" value="0"></div>
+        <div><label for="stacks3">3-Color Stacks <span class="max-value">Max: 11</span></label><input type="number" id="stacks3" min="0" max="11" value="0"></div>
+        <div><label for="bonus1">Matching/Beam Bonus <span class="max-value">Max: 17</span></label><input type="number" id="bonus1" min="0" max="17" value="0"></div>
+        <div><label for="bonus2">Standoff Bonus <span class="max-value">Max: 3</span></label><input type="number" id="bonus2" min="0" max="3" value="0"></div>
+        <div><label for="cleared">Cleared Pegs <span class="max-value">Max: 4</span></label><input type="number" id="cleared" min="0" max="4" value="0"></div>
+        <div><label for="contact">Touching Robots <span class="max-value">Max: 2</span></label><input type="number" id="contact" min="0" max="2" value="0"></div>
+        <div id="result">Total Score: 0 pts</div>
+        <div id="illegal"></div>
+      </form>
+    </div>
+
+    <!-- Timer Panel -->
+    <div class="panel" id="timer-panel">
+      <h1>Countdown Timer</h1>
+      <div class="timer-display" id="timer-display">01:00</div>
+      <div class="timer-controls">
+        <button class="timer-btn" id="start-btn">Start</button>
+        <button class="timer-btn" id="pause-btn" disabled="">Pause</button>
+        <button class="timer-btn" id="reset-btn">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Score calculator logic
+    const points = {
+      pins: 1,
+      beams: 10,
+      stacks2: 5,
+      stacks3: 15,
+      bonus1: 10,
+      bonus2: 10,
+      cleared: 2,
+      contact: 2,
+    };
+    const maxes = {
+      pins: 34,
+      beams: 2,
+      stacks2: 17,
+      stacks3: 11,
+      bonus1: 17,
+      bonus2: 3,
+      cleared: 4,
+      contact: 2,
+    };
+    const inputs = Object.keys(points);
+
+    function clampInputs() {
+      inputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          let val = parseInt(el.value) || 0;
+          val = Math.min(Math.max(val, 0), maxes[id]);
+          el.value = val;
+        }
+      });
+    }
+
+    function calculateScore() {
+      clampInputs();
+      const values = {};
+      let total = 0;
+
+      inputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          const val = parseInt(el.value) || 0;
+          values[id] = val;
+          total += val * points[id];
+        }
+      });
+
+      document.getElementById("result").textContent = `Total Score: ${total} pts`;
+
+      const totalStacks = values.stacks2 + values.stacks3;
+      const totalPinsUsed = values.beams + values.stacks2 * 2 + values.stacks3 * 3;
+
+      let illegalMsg = "";
+      if (totalStacks > 34) {
+        illegalMsg = "Warning: Total stacks exceed max allowed (34).";
+      } else if (totalPinsUsed > 34) {
+        illegalMsg = "Warning: Total pin usage exceeds available 34 pins.";
+      }
+      document.getElementById("illegal").textContent = illegalMsg;
+    }
+
+    inputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("input", calculateScore);
+      }
+    });
+
+    calculateScore();
+
+    // Timer logic with sound
+
+    // Create audio context
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContext();
+
+    function playBeep(duration = 200, frequency = 440, volume = 0.1) {
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.type = 'sine';
+      oscillator.frequency.value = frequency;
+      gainNode.gain.value = volume;
+
+      oscillator.start();
+
+      setTimeout(() => {
+        oscillator.stop();
+      }, duration);
+    }
+
+    const timerDisplay = document.getElementById('timer-display');
+    const startBtn = document.getElementById('start-btn');
+    const pauseBtn = document.getElementById('pause-btn');
+    const resetBtn = document.getElementById('reset-btn');
+
+    const countdownTime = 60; // 1 minute in seconds
+    let timerInterval = null;
+    let remainingTime = countdownTime;
+    let isRunning = false;
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+      const s = (seconds % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function updateDisplay() {
+      timerDisplay.textContent = formatTime(remainingTime);
+    }
+
+    function tick() {
+      if (remainingTime > 0) {
+        remainingTime--;
+
+       
+
+        updateDisplay();
+      } else {
+        clearInterval(timerInterval);
+        isRunning = false;
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+      }
+    }
+
+    startBtn.addEventListener('click', () => {
+      // Resume audio context if suspended by browser policy
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      if (!isRunning) {
+        timerInterval = setInterval(tick, 1000);
+        isRunning = true;
+        startBtn.disabled = true;
+        pauseBtn.disabled = false;
+
+        // Play start beep immediately on pressing start
+     
+      }
+    });
+
+    pauseBtn.addEventListener('click', () => {
+      if (isRunning) {
+        clearInterval(timerInterval);
+        isRunning = false;
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+      }
+    });
+
+    resetBtn.addEventListener('click', () => {
+      clearInterval(timerInterval);
+      isRunning = false;
+      remainingTime = countdownTime;
+      updateDisplay();
+      startBtn.disabled = false;
+      pauseBtn.disabled = true;
+    });
+
+    updateDisplay();
+
+    // Generate stars
+    const starsContainer = document.querySelector('.stars');
+    const starCount = 60;
+
+    for (let i = 0; i < starCount; i++) {
+      const star = document.createElement('div');
+      star.classList.add('star');
+      const size = Math.random() * 4 + 3; // 3px to 7px
+      star.style.width = `${size}px`;
+      star.style.height = `${size}px`;
+      star.style.top = `${Math.random() * 100}vh`;
+      star.style.left = `${Math.random() * 100}vw`;
+      star.style.animationDelay = `${Math.random() * 3}s`;
+      starsContainer.appendChild(star);
+    }
+  </script>
+
+
+</body></html>
